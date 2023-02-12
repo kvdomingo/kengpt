@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { Button } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import api from "../api";
 import Context from "../context/Context";
 import ChatItem from "./ChatItem";
@@ -38,13 +39,18 @@ function ExampleButton({ children, disabled }: ExampleButtonProps) {
       variant="contained"
       color="inherit"
       sx={{
-        textTransform: "unset",
-        whiteSpace: "normal",
-        boxShadow: "none",
-        mb: 1,
-        mx: 2,
-        py: 1,
-        pointerEvents: disabled ? "none" : undefined,
+        "backgroundColor": grey[900],
+        "textTransform": "unset",
+        "whiteSpace": "normal",
+        "boxShadow": "none",
+        "mb": 1,
+        "mx": 2,
+        "py": 1,
+        "pointerEvents": disabled ? "none" : undefined,
+        "&:hover": {
+          backgroundColor: grey[800],
+          boxShadow: "none",
+        },
       }}
       onClick={disabled ? () => {} : e => handleSubmit(e, children)}
     >
