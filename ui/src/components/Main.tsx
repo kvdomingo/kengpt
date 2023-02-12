@@ -1,34 +1,53 @@
-import { useState } from "react";
+import { Fragment, useContext, useState } from "react";
+import { Send } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Container,
   Grid,
+  IconButton,
   List,
   ListItem,
   TextField,
-  Typography,
 } from "@mui/material";
 import api from "../api";
+import Context from "../context/Context";
+import ChatIntro from "./ChatIntro";
+import ChatItem from "./ChatItem";
 
 export default function Main() {
+  const { history, setHistory, hasApiError, setHasApiError } = useContext(
+    Context,
+  );
   const [prompt, setPrompt] = useState("");
-  const [history, setHistory] = useState<string[]>([]);
 
   function handleSubmit(e: any) {
     e.preventDefault();
-    setHistory(history => [...history, prompt]);
+    if (prompt.length === 0) return;
+    setHasApiError(false);
+    setHistory(history => [
+      ...history,
+      <ChatItem isUser>{prompt}</ChatItem>,
+      <ChatItem isThinking />,
+    ]);
+    setPrompt("");
     api
       .chat({ prompt })
-      .then(res => setHistory(history => [...history, res.data.text]))
-      .catch(err => alert(err.message))
-      .finally(() => setPrompt(""));
+      .then(res =>
+        setHistory(history => [
+          ...history.slice(0, -1),
+          <ChatItem>{res.data.text}</ChatItem>,
+        ]),
+      )
+      .catch(() => {
+        setHasApiError(true);
+        setHistory(history => history.slice(0, -1));
+      });
   }
 
   return (
     <Grid container className="main">
-      <Grid item xs={2} sx={{ backgroundColor: "background.paper", p: 2 }}>
-        hello
-      </Grid>
+      <Grid item xs={2} sx={{ backgroundColor: "background.paper", p: 2 }} />
       <Grid
         item
         container
@@ -36,54 +55,65 @@ export default function Main() {
         sx={{ backgroundColor: "background.default", placeContent: "center" }}
       >
         <Container
+          maxWidth="md"
           sx={{
             display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "flex-end",
+            justifyContent: history.length > 0 ? "flex-start" : "center",
+            alignItems: history.length > 0 ? "flex-end" : "center",
             height: "100%",
           }}
         >
           {history.length === 0 ? (
-            <Typography variant="h4" component="h1">
-              ChatGPT
-            </Typography>
+            <ChatIntro />
           ) : (
-            <List sx={{ width: "100%" }}>
+            <List sx={{ width: "100%", pb: 20 }}>
               {history.map((his, i) => (
-                <ListItem
-                  key={i}
-                  sx={{
-                    borderBottom: "1px solid white",
-                    py: 4,
-                    backgroundColor:
-                      i % 2 === 0 ? "background.default" : "background.paper",
-                  }}
-                >
-                  <div>{his}</div>
-                </ListItem>
+                <Fragment key={i}>{his}</Fragment>
               ))}
+              {hasApiError && (
+                <ListItem sx={{ borderBottom: "1px solid white", py: 4 }}>
+                  <Alert severity="error" sx={{ width: "100%" }}>
+                    An error occurred. Please try again later.
+                  </Alert>
+                </ListItem>
+              )}
             </List>
           )}
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{
+              width: "50%",
+              position: "fixed",
+              bottom: 0,
+              pb: 6,
+              pt: 6,
+            }}
+            className="chatbox"
+          >
+            <TextField
+              fullWidth
+              autoFocus
+              variant="outlined"
+              name="prompt"
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <IconButton onClick={handleSubmit} size="small">
+                    <Send />
+                  </IconButton>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  border: "2px solid white",
+                },
+                "backgroundColor": "background.default",
+              }}
+            />
+          </Box>
         </Container>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            display: "absolute",
-            bottom: 0,
-            mb: "10em",
-            width: "75%",
-          }}
-        >
-          <TextField
-            fullWidth
-            autoFocus
-            // multiline
-            name="prompt"
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-          />
-        </Box>
       </Grid>
     </Grid>
   );

@@ -1,3 +1,12 @@
 .main {
   height: 100vh;
 }
+
+.chatbox {
+  background: linear-gradient(
+    0deg,
+    rgba(44, 48, 50, 1) 0%,
+    rgba(44, 48, 50, 1) 65%,
+    rgba(44, 48, 50, 0) 100%
+  );
+}
