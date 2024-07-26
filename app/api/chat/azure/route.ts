@@ -5,6 +5,7 @@ import OpenAI from "openai"
 import { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions.mjs"
 
 export const runtime = "edge"
+export const preferredRegion = ["iad1", "sfo1", "sin1", "fra1"]
 
 export async function POST(request: Request) {
   const json = await request.json()
